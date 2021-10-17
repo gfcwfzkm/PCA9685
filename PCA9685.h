@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-/* Register Definition of PCA9685 */
+/* Registers of the PCA9685 */
 #define R_PCA9685_MODE1        		0x00
 #define R_PCA9685_MODE1_RESTART			0x80
 #define R_PCA9685_MODE1_EXTCLK			0x40
