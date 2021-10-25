@@ -91,10 +91,10 @@
 #define R_PCA9685_ALL_LED_ON_L		0xFA
 #define R_PCA9685_ALL_LED_ON_H		0xFB
 #define R_PCA9685_ALL_LED_OFF_L		0xFC
-#define R_PCA9685_ALL_LED_OFF_H		0xFE
-#define R_PCA9685_PRE_SCALE			0xFF
+#define R_PCA9685_ALL_LED_OFF_H		0xFD
+#define R_PCA9685_PRE_SCALE			0xFE
 
-enum pca8685_e {
+enum PCA9685_LED {
 	PCA_LED0 = 0,
 	PCA_LED1,
 	PCA_LED2,
@@ -113,10 +113,17 @@ enum pca8685_e {
 	PCA_LED15
 };
 
+enum PCA9685_ERROR {
+	PCA9685_NO_ERROR,
+	PCA9685_IOERROR
+};
+
 /* Data struct */
 typedef struct{
 	uint8_t i2cAddr;
-	uint8_t err;
+	enum PCA9685_ERROR errors;
+	uint16_t on;
+	uint16_t off;
 	void *ioInterface;					// InterfacePointer of the IO/Interface Library
 	uint8_t (*startTransaction)(void*);	// Prepare the IO/Peripheral Interface for a transaction
 	uint8_t (*sendBytes)(void*,			// Send data to the interface: InterfacePointer
@@ -128,29 +135,32 @@ typedef struct{
 						uint8_t*,		// Pointer to the buffer to receive
 						uint16_t);		// length of the buffer
 	uint8_t (*endTransaction)(void*);	// Finish the transaction & release the IO / Peripheral
-} pca9685_t;
+} PCA9685_t;
 
 /* Just to initialise the struct if one doesn't want to initialise it themself in the declaration */
-void pca9685_initStruct(pca9685_t* inst, uint8_t i2cAddr, void* io, uint8_t (*startTrans)(void*), uint8_t (*sendBytes)(void*,uint8_t,uint8_t*,uint16_t),uint8_t (*getBytes)(void*,uint8_t,uint8_t*,uint16_t),uint8_t (*endTrans)(void*));
+void pca9685_initStruct(PCA9685_t* inst, uint8_t i2cAddr, void* io, uint8_t (*startTrans)(void*), uint8_t (*sendBytes)(void*,uint8_t,uint8_t*,uint16_t),uint8_t (*getBytes)(void*,uint8_t,uint8_t*,uint16_t),uint8_t (*endTrans)(void*));
 
-uint8_t pca9685_initChip(pca9685_t* inst);
+uint8_t pca9685_initChip(PCA9685_t* inst);
 
-void pca9685_writeReg(pca9685_t* inst, uint8_t regAddr, uint8_t value);
-uint8_t pca9685_readReg(pca9685_t* inst, uint8_t regAddr);
+void pca9685_writeReg(PCA9685_t* inst, uint8_t regAddr, uint8_t value);
+uint8_t pca9685_readReg(PCA9685_t* inst, uint8_t regAddr);
 
-/* Set the prescaler register
- *
- * Sets the prescaler register as 8bit value. With the default clock of ~25MHz
- * a output frequency of 24Hz to 1526Hz can be achived ((clock / (4 * 4096)) / prescaler)
- */
-void pca9685_setPrescaler(pca9685_t* inst, uint8_t prescaler);
+void pca9685_setFrequency(PCA9685_t* inst, float frequency);
 
-uint8_t pca9685_getPrescaler(pca9685_t* inst);
+void pca9685_setPrescaler(PCA9685_t* inst, uint8_t prescaler);
 
-/* Set the PWM LED Registers
- *
- * Sets the PWM on and off value of the led register
- */
-void pca9685_setPWM(pca9685_t* inst, enum pca8685_e led, uint16_t on, uint16_t off);
+float pca9685_getFrequency(PCA9685_t* inst);
+
+uint8_t pca9685_getPrescaler(PCA9685_t* inst);
+
+void pca9685_setPWM(PCA9685_t* inst, enum PCA9685_LED led, uint16_t on, uint16_t off);
+
+void pca9685_setAllPWM(PCA9685_t* inst, uint16_t on, uint16_t off);
+
+void pca9685_configureONOFF(PCA9685_t* inst, uint16_t on, uint16_t off);
+
+void pca9685_fullyON(PCA9685_t* inst, enum PCA9685_LED led);
+
+void pca9685_fullyOFF(PCA9685_t* inst, enum PCA9685_LED led);
 
 #endif
