@@ -110,12 +110,6 @@ void pca9685_setPWM(PCA9685_t* inst, enum PCA9685_LED led, uint16_t on, uint16_t
 	inst->startTransaction(inst->ioInterface);
 	inst->errors |= inst->sendBytes(inst->ioInterface, inst->i2cAddr, dataPackage, 5);
 	inst->endTransaction(inst->ioInterface);
-/*
-	pca9685_writeReg(inst, led * 4 + R_PCA9685_LED0_ON_L, on);
-	pca9685_writeReg(inst, led * 4 + R_PCA9685_LED0_ON_H, on >> 8);
-	pca9685_writeReg(inst, led * 4 + R_PCA9685_LED0_OFF_L, off);
-	pca9685_writeReg(inst, led * 4 + R_PCA9685_LED0_OFF_H, off >> 8);
-*/
 }
 
 void pca9685_setAllPWM(PCA9685_t* inst, uint16_t on, uint16_t off)
@@ -123,10 +117,15 @@ void pca9685_setAllPWM(PCA9685_t* inst, uint16_t on, uint16_t off)
 	uint8_t dataPackage[5];
 	inst->errors = PCA9685_NO_ERROR;
 
-	pca9685_writeReg(inst, R_PCA9685_ALL_LED_ON_L, on);
-	pca9685_writeReg(inst, R_PCA9685_ALL_LED_ON_H, on >> 8);
-	pca9685_writeReg(inst, R_PCA9685_ALL_LED_OFF_L, off);
-	pca9685_writeReg(inst, R_PCA9685_ALL_LED_OFF_H, off >> 8);
+	dataPackage[0] = R_PCA9685_ALL_LED_ON_L;
+	dataPackage[1] = on;
+	dataPackage[2] = on >> 8;
+	dataPackage[3] = off;
+	dataPackage[4] = off >> 8;
+
+	inst->startTransaction(inst->ioInterface);
+	inst->errors |= inst->sendBytes(inst->ioInterface, inst->i2cAddr, dataPackage, 5);
+	inst->endTransaction(inst->ioInterface);
 }
 
 void pca9685_configureONOFF(PCA9685_t* inst, uint16_t on, uint16_t off)
